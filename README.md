@@ -4,5 +4,3 @@
 - npm run dev
 
 # SCREENSHOTS
-
-![screenshot](screenshot.png)
