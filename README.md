@@ -5,5 +5,4 @@
 
 # SCREENSHOTS
 
-
-![Alt text](/public/screenshot.webp?raw=true "Optional Title")
+![Alt text](/public/screenshot.webp?raw=true 'Optional Title')

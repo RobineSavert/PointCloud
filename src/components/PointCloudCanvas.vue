@@ -10,8 +10,9 @@
   let camera: THREE.PerspectiveCamera;
   let renderer: THREE.WebGLRenderer;
   let points: THREE.Points | null = null;
-  let animationId = 0;
   let controls: OrbitControls | null = null;
+
+  let animationId = 0;
 
   const emit = defineEmits<{
     (e: 'defaultLoaded', img: HTMLImageElement): void;
@@ -30,19 +31,17 @@
     ctx.drawImage(img, 0, 0);
 
     const { data } = ctx.getImageData(0, 0, img.width, img.height);
-
     const positions: number[] = [];
     const colors: number[] = [];
-
-    const step: number = Math.max(1, Math.floor(density));
+    const step = Math.max(1, Math.floor(density));
 
     for (let y = 0; y < img.height; y += step) {
       for (let x = 0; x < img.width; x += step) {
-        let rSum = 0;
-        let gSum = 0;
-        let bSum = 0;
-        let aSum = 0;
-        let count = 0;
+        let rSum = 0,
+          gSum = 0,
+          bSum = 0,
+          aSum = 0,
+          count = 0;
 
         for (let oy = 0; oy < 2; oy++) {
           for (let ox = 0; ox < 2; ox++) {
@@ -50,16 +49,16 @@
             const sy = y + oy;
             if (sx >= img.width || sy >= img.height) continue;
 
-            const sIdx = (sy * img.width + sx) * 4;
-            rSum += data[sIdx];
-            gSum += data[sIdx + 1];
-            bSum += data[sIdx + 2];
-            aSum += data[sIdx + 3];
+            const idx = (sy * img.width + sx) * 4;
+            rSum += data[idx]!;
+            gSum += data[idx + 1]!;
+            bSum += data[idx + 2]!;
+            aSum += data[idx + 3]!;
             count++;
           }
         }
 
-        if (count === 0) continue;
+        if (!count) continue;
 
         const r = rSum / count;
         const g = gSum / count;
@@ -69,7 +68,6 @@
         const brightness = (r + g + b) / 3;
 
         if (brightness > 250 && a > 230) continue;
-
         if (a < 5) continue;
 
         const px = x - img.width / 2;
@@ -111,10 +109,10 @@
       shader.fragmentShader = shader.fragmentShader.replace(
         `#include <clipping_planes_fragment>`,
         `
-      #include <clipping_planes_fragment>
-      float dist = length(gl_PointCoord - vec2(0.5));
-      if (dist > 0.5) discard;
-    `
+        #include <clipping_planes_fragment>
+        float dist = length(gl_PointCoord - vec2(0.5));
+        if (dist > 0.5) discard;
+      `
       );
     };
 
@@ -122,19 +120,17 @@
       scene.remove(points);
       points.geometry.dispose();
       (points.material as THREE.Material).dispose();
-      points = null;
     }
 
     points = new THREE.Points(geometry, material);
 
     const scaleFactor = 1.4 / Math.max(img.width, img.height);
     points.scale.set(scaleFactor, scaleFactor, scaleFactor);
-
     scene.add(points);
 
     camera.position.set(0, 0, 2.2);
-    camera.updateProjectionMatrix();
     camera.lookAt(0, 0, 0);
+    camera.updateProjectionMatrix();
   }
 
   function animate() {
@@ -145,10 +141,7 @@
       points.rotation.x += 0.0005;
     }
 
-    if (controls) {
-      controls.update();
-    }
-
+    controls?.update();
     renderer.render(scene, camera);
   }
 
@@ -156,6 +149,7 @@
     if (!container.value) return;
     const w = container.value.clientWidth;
     const h = container.value.clientHeight || 1;
+
     camera.aspect = w / h;
     camera.updateProjectionMatrix();
     renderer.setSize(w, h);
@@ -178,7 +172,6 @@
     renderer.setSize(w, h);
     el.appendChild(renderer.domElement);
 
-    // ⭐ ORBIT CONTROLS SETUP (THIS WAS MISSING)
     controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
     controls.dampingFactor = 0.05;
@@ -203,9 +196,7 @@
     cancelAnimationFrame(animationId);
     window.removeEventListener('resize', onResize);
     renderer.dispose();
-    if (controls) {
-      controls.dispose();
-    }
+    controls?.dispose();
   });
 
   defineExpose({

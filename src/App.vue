@@ -38,21 +38,20 @@
 
       <ImageUploader @imageLoaded="onImageLoaded" />
 
-      <div class="w-full flex flex-col gap-2 mt-4">
-        <label class="text-xs tracking-wide text-white/60 mb-2">Density: {{ density }}</label>
+      <div class="mt-4 flex w-full flex-col gap-2">
+        <label class="mb-2 text-xs tracking-wide text-white/60">Density: {{ density }}</label>
 
         <input
-            type="range"
-            min="3"
-            max="20"
-            step="1"
-            v-model="density"
-            class="w-full h-1 rounded-lg appearance-none cursor-pointer
-           bg-white/10 accent-white"
+          type="range"
+          min="3"
+          max="20"
+          step="1"
+          v-model="density"
+          class="h-1 w-full cursor-pointer appearance-none rounded-lg bg-white/10 accent-white"
         />
       </div>
     </div>
-      <div class="min-h-0 flex-1">
+    <div class="min-h-0 flex-1">
       <PointCloudCanvas ref="cloud" @defaultLoaded="onImageLoaded" />
     </div>
   </div>
