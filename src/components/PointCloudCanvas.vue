@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { ref, onMounted, onBeforeUnmount } from 'vue';
+  import { onBeforeUnmount, onMounted, ref } from 'vue';
   import * as THREE from 'three';
   import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
   import spadeUrl from '../assets/spade.png';
@@ -20,7 +20,13 @@
 
   async function generatePointCloudFromImage(
     img: HTMLImageElement,
-    density: number
+    density: number,
+    pointSize: number,
+    colorMode: string = 'original',
+    tintColor: string = '#ffffff',
+    opacity: number = 1,
+    depthScale: number = 0,
+    depthMode: 'noise' | 'brightness' = 'noise'
   ): Promise<void> {
     if (!scene || !camera) return;
 
@@ -31,6 +37,7 @@
     ctx.drawImage(img, 0, 0);
 
     const { data } = ctx.getImageData(0, 0, img.width, img.height);
+
     const positions: number[] = [];
     const colors: number[] = [];
     const step = Math.max(1, Math.floor(density));
@@ -60,19 +67,48 @@
 
         if (!count) continue;
 
-        const r = rSum / count;
-        const g = gSum / count;
-        const b = bSum / count;
         const a = aSum / count;
+        let r = rSum / count;
+        let g = gSum / count;
+        let b = bSum / count;
 
         const brightness = (r + g + b) / 3;
+
+        switch (colorMode) {
+          case 'mono':
+            r = g = b = brightness;
+            break;
+          case 'invert':
+            r = 255 - r;
+            g = 255 - g;
+            b = 255 - b;
+            break;
+          case 'tint':
+            const tr = parseInt(tintColor.slice(1, 3), 16);
+            const tg = parseInt(tintColor.slice(3, 5), 16);
+            const tb = parseInt(tintColor.slice(5, 7), 16);
+            const f = brightness / 255;
+            r = tr * f;
+            g = tg * f;
+            b = tb * f;
+            break;
+        }
 
         if (brightness > 250 && a > 230) continue;
         if (a < 5) continue;
 
         const px = x - img.width / 2;
         const py = -(y - img.height / 2);
-        const pz = (Math.random() - 0.5) * 60;
+
+        let pz = 0;
+
+        if (depthMode === 'brightness') {
+          const depth = (brightness / 255 - 0.5) * depthScale * 200;
+          const jitter = (Math.random() - 0.5) * 5;
+          pz = depth + jitter;
+        } else {
+          pz = (Math.random() - 0.5) * depthScale * 60;
+        }
 
         positions.push(px, py, pz);
         colors.push(r / 255, g / 255, b / 255);
@@ -96,10 +132,10 @@
     geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
 
     const material = new THREE.PointsMaterial({
-      size: 0.022,
+      size: pointSize,
       vertexColors: true,
       transparent: true,
-      opacity: 0.95,
+      opacity: opacity,
       sizeAttenuation: true,
       depthWrite: false,
       map: null,
@@ -109,10 +145,10 @@
       shader.fragmentShader = shader.fragmentShader.replace(
         `#include <clipping_planes_fragment>`,
         `
-        #include <clipping_planes_fragment>
-        float dist = length(gl_PointCoord - vec2(0.5));
-        if (dist > 0.5) discard;
-      `
+      #include <clipping_planes_fragment>
+      float dist = length(gl_PointCoord - vec2(0.5));
+      if (dist > 0.5) discard;
+    `
       );
     };
 
@@ -149,7 +185,6 @@
     if (!container.value) return;
     const w = container.value.clientWidth;
     const h = container.value.clientHeight || 1;
-
     camera.aspect = w / h;
     camera.updateProjectionMatrix();
     renderer.setSize(w, h);
@@ -185,7 +220,7 @@
     const img = new Image();
     img.src = spadeUrl;
     img.onload = () => {
-      generatePointCloudFromImage(img, 6);
+      generatePointCloudFromImage(img, 6, 0.008, 'original', '#ffffff', 1, 0, 'noise');
       emit('defaultLoaded', img);
     };
 
