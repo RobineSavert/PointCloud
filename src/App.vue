@@ -73,7 +73,7 @@
       <ImageUploader @imageLoaded="onImageLoaded" />
 
       <div class="mt-4 grid grid-cols-3 gap-4 md:flex md:flex-col md:gap-4">
-        <div class="flex flex-col gap-2">
+        <div class="flex flex-col gap-2 md:mb-6">
           <label class="mb-2 text-xs tracking-wide text-white/60">Density: {{ density }}</label>
           <input
             type="range"
@@ -85,7 +85,7 @@
           />
         </div>
 
-        <div class="flex flex-col gap-2">
+        <div class="flex flex-col gap-2 md:mb-6">
           <label class="mb-2 text-xs tracking-wide text-white/60">
             Point size: {{ pointSize }}
           </label>
@@ -99,7 +99,7 @@
           />
         </div>
 
-        <div class="flex flex-col gap-2">
+        <div class="flex flex-col gap-2 md:mb-6">
           <label class="mb-2 text-xs tracking-wide text-white/60">
             Opacity: {{ opacity.toFixed(2) }}
           </label>
@@ -113,7 +113,7 @@
           />
         </div>
 
-        <div class="flex flex-col gap-2">
+        <div class="flex flex-col gap-2 md:mb-6">
           <label class="mb-2 text-xs tracking-wide text-white/60">
             Depth: {{ depthScale.toFixed(2) }}
           </label>
@@ -127,7 +127,7 @@
           />
         </div>
 
-        <div class="flex flex-col gap-2">
+        <div class="flex flex-col gap-2 md:mb-6">
           <label class="mb-2 text-xs tracking-wide text-white/60">Depth mode</label>
           <select
             v-model="depthMode"
@@ -138,7 +138,7 @@
           </select>
         </div>
 
-        <div class="flex flex-col gap-2">
+        <div class="flex flex-col gap-2 md:mb-6">
           <label class="mb-2 text-xs tracking-wide text-white/60">Color mode</label>
           <select
             v-model="colorMode"
